@@ -17,7 +17,7 @@ class MorrissonsCollector(BaseScrollableCollector):
 
     def __init__(self):
         super(MorrissonsCollector, self).__init__()
-        self.output_datadir = os.path.join(DATADIR_PATH, 'MORRISSONS')
+        self.output_datadir = os.path.join(os.path.join(DATADIR_PATH, 'MORRISSONS'), str(datetime.datetime.now().date()))
         try:
             os.makedirs(self.output_datadir)
         except:
