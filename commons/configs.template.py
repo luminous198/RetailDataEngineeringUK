@@ -1,0 +1,8 @@
+#DATADIR_PATH = r''
+
+#MAX_PAGE_PER_CATEGORY = 100
+
+#DB_USERNAME = ''
+#DB_HOST = 'localhost'
+#DB_PORT = '5432'
+#DB_PASSWORD = ''
