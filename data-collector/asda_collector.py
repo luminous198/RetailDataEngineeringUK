@@ -17,6 +17,8 @@ from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY
 from base_collector import BaseCollector
 
 
+
+
 class ASDACollector(BaseCollector):
 
     def __int__(self):
