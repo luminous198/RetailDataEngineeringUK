@@ -1,0 +1,6 @@
+##########db dump
+
+#dump inside docker
+pg_dump -U postgres uk-retail-data >> tempfile.sql
+#copy from docker to local, change container id
+docker cp container_id:tempfile.sql C:\Users\milan\Desktop

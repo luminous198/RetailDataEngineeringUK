@@ -61,3 +61,6 @@ if __name__ == "__main__":
     # print(combined_df.head())
 
     load_data(combined_df)
+
+    # outfilepath = r'C:\Users\milan\Documents\projects\grocery-agg\data\analysis\retail_store_items_full.csv'
+    # combined_df.to_csv(outfilepath, index=False)
