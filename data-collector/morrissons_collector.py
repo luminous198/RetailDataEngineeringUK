@@ -10,6 +10,8 @@ from urllib3.exceptions import NewConnectionError, ConnectionError, MaxRetryErro
 from base_scrollable_collector import BaseScrollableCollector
 from commons.configs import DATADIR_PATH
 import re
+from bs4 import BeautifulSoup
+
 
 
 
@@ -25,90 +27,105 @@ class MorrissonsCollector(BaseScrollableCollector):
         self.sleep_time = 10
         self.base_url = 'https://groceries.morrisons.com/browse/'
         self.css_elements_map = {
-            'product_name': ('#main-content .fops-item div.fop-description > h4'),
-            'product_href': ('#main-content div.fop-contentWrapper'),
-            'product_price': ('#main-content .fops-item span.fop-price'),
-            'product_price_per_kg': ('#main-content .fops-item span.fop-unit-price'),
-            'product_boxes_data': '#main-content .fops-item'
+            'product_boxes_data': '#main-content .fops-item',
+            'product_tiles': 'li.fops-item'
         }
-
-
         self.categories = ['meat-poultry-179549', 'fruit-veg-176738', 'fresh-176739', 'fish-seafood-184367',
                        'bakery-cakes-102210', 'food-cupboard-102705', 'chocolate-sweets-106130', 'frozen-180331',
                        'toiletries-beauty-102838', 'drinks-103644', 'beer-wines-spirits-103120', 'household-102063',
                        'home-garden-166274', 'health-wellbeing-medicines-103497', 'baby-toddler-177598',
                        'toys-entertainment-166275',
                        'pet-shop-102207', 'free-from-175652', 'world-foods-182137']
+    def box_html_to_json(self, boxhtml):
+        soup = BeautifulSoup(boxhtml, 'html.parser')
+
+        product = {}
+        extraction_attrs = [
+            ('offer', 'span', 'fop-ribbon__title', 'text'),
+            ('Product Name', 'h4', 'fop-title', 'text'),
+            ('sku', 'div', 'fop-item', 'data-sku'),
+            ('Product HREF', 'a', 'fop-contentWrapper', 'href'),
+            ('image_url', 'img', 'fop-img', 'src'),
+            ('product_life', 'span', 'fop-life', 'text'),
+            ('Price', 'span', 'fop-price', 'text'),
+            ('Price_per_KG', 'span', 'fop-unit-price', 'text'),
+            ('rating', 'span', 'fop-rating-inner', 'title'),
+            ('promotion', 'a', 'fop-row-promo', 'text'),
+            ('Weight', 'span', 'fop-catch-weight-inline', 'text')
+        ]
+
+        for _attr in extraction_attrs:
+            try:
+                elem = soup.find(_attr[1], class_=_attr[2])
+                if _attr[3] == 'text':
+                    product[_attr[0]] = elem.get_text(strip=True) if elem else None
+                else:
+                    product[_attr[0]] = elem[_attr[3]] if elem and _attr[3] in elem.attrs else None
+            except Exception as e:
+                product[_attr[0]] = f'ERROR: {str(e)}'
+
+        return product
 
     def scrape(self):
 
         start_time = time.time()
         out_file_time = str(datetime.datetime.now())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
-        output_file = os.path.join(self.output_datadir, 'raw_data_{0}'.format(out_file_time + '.csv'))
 
-        dataset = []
+        outcols = ['offer', 'Product Name', 'sku', 'Product HREF', 'product_life', 'Price', 'Price_per_KG',
+                   'rating', 'promotion', 'Category', 'Page Number', 'Record Index', 'Weight']
 
         for _category in self.categories:
+            output_file = os.path.join(self.output_datadir,
+                                       'raw_data_{0}-{1}-{2}'.format(out_file_time, _category, '.csv'))
+            dataset = []
 
             print(f'started category: {_category}')
             driver = self.get_driver()
             driver.set_script_timeout(30)
-            boxes_rect = []
 
             url_to_fetch = f'{self.base_url}/{_category}?display=10000&showOOS=true'
-
             driver.get(url_to_fetch)
             time.sleep(randint(7, 10))
 
-            boxes = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_boxes_data'])
-            boxes_rect.extend([box.rect for box in boxes])
 
-            i = 0
+            scrollbox = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_boxes_data'])
+            scrollboxes_rect = []
+            scrollboxes_rect.extend([box.rect for box in scrollbox])
+            j = 0
             try:
-
-                while i<len(boxes):
-                    scroll_position = boxes[i].rect['y']
+                while j<len(scrollboxes_rect):
+                    scroll_position = scrollboxes_rect[j]['y']
                     driver.execute_script(f"window.scrollTo(0, {scroll_position});")
-                    i += 50
+                    j += 50
                     time.sleep(2)
+            except Exception as e:
+                scroll_position = scrollboxes_rect[j]['y']
+                driver.execute_script(f"window.scrollTo(0, {scroll_position});")
+                driver.quit()
+                driver = self.get_driver()
 
-                raw_names = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_name'])
-                product_hrefs = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_href'])
-                prices = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_price'])
-                price_per_kg = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_price_per_kg'])
-
-                price_regex = re.compile(r'[^\d.,]+')
-
-
-                names = map(lambda x: x.text, raw_names)
-                names_hrefs = map(lambda x: x.get_attribute('href'), product_hrefs)
-                prices = map(lambda x: x.text, prices)
-                prices = map(lambda x: price_regex.sub('', x), prices)
-                prices = map(lambda x: x.replace(u'\xA3', ''), prices)
-                price_per_kg = map(lambda x: x.text, price_per_kg)
-                price_per_kg = map(lambda x: x.replace(u'\xA3', ''), price_per_kg)
-
-                category_list = [_category] * len(raw_names)
-
-                dummy_page_number = [1] * len(raw_names)
-                page_product_data = list(zip(dummy_page_number, names, prices, price_per_kg, names_hrefs, category_list))
-                dataset.extend(page_product_data)
+            try:
+                boxes = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_tiles'])
+                for ind, _box in enumerate(boxes):
+                    _boxdata = _box.get_attribute('innerHTML')
+                    boxjson = self.box_html_to_json(_boxdata)
+                    boxjson['Category'] = _category
+                    boxjson['Page Number'] = 1
+                    boxjson['Record Index'] = ind
+                    dataset.append(boxjson)
 
             except (TimeoutException, WebDriverException, ConnectionError, NewConnectionError, MaxRetryError, TimeoutError, ContentTooShortError):
                 print(f'Request error for category: {_category}')
-                scroll_position = boxes[i].rect['y']  # Store the scroll position before quitting
                 driver.quit()
                 time.sleep(30)
                 driver = self.get_driver()
                 driver.get(url_to_fetch)
-                driver.execute_script(f"window.scrollTo(0, {scroll_position});")
                 continue
 
             driver.quit()
-        df = pd.DataFrame(dataset, columns =['Page Number', 'Product Name', 'Price',
-                                             'Price_per_KG', 'Product HREF', 'Category'])
-        df.to_csv(output_file, index=False)
+            df = pd.DataFrame(dataset, columns =outcols)
+            df.to_csv(output_file, index=False)
 
         end_time = time.time()
 
