@@ -48,7 +48,7 @@ class MorrissonsCollector(BaseScrollableCollector):
             ('image_url', 'img', 'fop-img', 'src'),
             ('product_life', 'span', 'fop-life', 'text'),
             ('Price', 'span', 'fop-price', 'text'),
-            ('Price_per_KG', 'span', 'fop-unit-price', 'text'),
+            ('Price_per_UOM', 'span', 'fop-unit-price', 'text'),
             ('rating', 'span', 'fop-rating-inner', 'title'),
             ('promotion', 'a', 'fop-row-promo', 'text'),
             ('Weight', 'span', 'fop-catch-weight-inline', 'text')
@@ -72,7 +72,7 @@ class MorrissonsCollector(BaseScrollableCollector):
         out_file_time = str(datetime.datetime.now())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
 
-        outcols = ['offer', 'Product Name', 'sku', 'Product HREF', 'product_life', 'Price', 'Price_per_KG',
+        outcols = ['offer', 'Product Name', 'sku', 'Product HREF', 'product_life', 'Price', 'Price_per_UOM',
                    'rating', 'promotion', 'Category', 'Page Number', 'Record Index', 'Weight']
 
         for _category in self.categories:

@@ -15,6 +15,7 @@ import re
 from selenium.webdriver.firefox.options import Options
 from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY
 from base_collector import BaseCollector
+from bs4 import BeautifulSoup
 
 
 
@@ -82,6 +83,34 @@ class ASDACollector(BaseCollector):
                                     '.co-product__price-per-uom'),
         }
 
+    def extract_product_data(self, boxhtml):
+        soup = BeautifulSoup(boxhtml, 'html.parser')
+
+        product = {}
+        extraction_attrs = [
+            ('Product Name', 'h3', 'co-product__title', 'text'),
+            ('Product HREF', 'a', 'co-product__anchor', 'href'),
+            ('Image URL', 'img', 'asda-img', 'src'),
+            ('Volume', 'span', 'co-product__volume', 'text'),
+            ('Rating', 'button', 'co-product__rating', 'aria-label'),
+            ('Review Count', 'span', 'co-product__review-count', 'text'),
+            ('Price', 'strong', 'co-product__price', 'text'),
+            ('Price_per_UOM', 'span', 'co-product__price-per-uom', 'text'),
+            ('Promotion Icon Alt', 'img', 'co-product__promo-icon-img', 'alt'),
+            ('Promotion Icon Title', 'img', 'co-product__promo-icon-img', 'title')
+        ]
+
+        for _attr in extraction_attrs:
+            try:
+                elem = soup.find(_attr[1], class_=_attr[2])
+                if _attr[3] == 'text':
+                    product[_attr[0]] = elem.get_text(strip=True) if elem else None
+                else:
+                    product[_attr[0]] = elem[_attr[3]] if elem and _attr[3] in elem.attrs else None
+            except Exception as e:
+                product[_attr[0]] = f'ERROR: {str(e)}'
+
+        return product
 
     def scrape(self):
 
@@ -90,6 +119,9 @@ class ASDACollector(BaseCollector):
         out_file_time = str(datetime.datetime.now())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
 
+        outcols = ['Product Name', 'Product HREF', 'Image URL', 'Volume', 'Rating', 'Review Count', 'Price',
+                   'Price per UOM', 'Promotion Icon Alt', 'Promotion Icon Title', 'Category',
+                   'Page Number', 'Record Index']
 
         for _category in self.categories:
             dataset = []
@@ -110,24 +142,15 @@ class ASDACollector(BaseCollector):
                     driver.get(f'{self.base_url}/search/{_category}/products?page={page}')
                     time.sleep(randint(2, 5))
 
-                    raw_names = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_name'])
-                    prices = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_price'])
-                    price_per_kg = driver.find_elements(By.CSS_SELECTOR, self.css_elements_map['product_price_per_kg'])
-                    page_number = [page] * len(raw_names)
+                    boxes = driver.find_elements(By.CSS_SELECTOR, ".co-product")
 
-                    price_regex = re.compile(r'[^\d.,]+')
-
-                    names = map(lambda x: x.text, raw_names)
-                    names_hrefs = map(lambda x: x.get_attribute('href'), raw_names)
-                    prices = map(lambda x: x.text, prices)
-                    prices = map(lambda x: price_regex.sub('', x), prices)
-                    price_per_kg = map(lambda x: x.text, price_per_kg)
-                    price_per_kg = map(lambda x: x.replace(u'\xA3', ''), price_per_kg)
-
-                    category_list = [_category] * len(raw_names)
-
-                    page_product_data = list(zip(page_number, names, prices, price_per_kg, names_hrefs, category_list))
-                    dataset.extend(page_product_data)
+                    for ind, _box in enumerate(boxes):
+                        _boxhtml = _box.get_attribute('innerHTML')
+                        boxjson = self.extract_product_data(_boxhtml)
+                        boxjson['Category'] = _category
+                        boxjson['Page Number'] = page
+                        boxjson['Record Index'] = ind
+                        dataset.append(boxjson)
 
                     page +=1
                 except (TimeoutException, WebDriverException,
@@ -140,8 +163,7 @@ class ASDACollector(BaseCollector):
                     continue
 
                 driver.quit()
-            df = pd.DataFrame(dataset, columns=['Page Number', 'Product Name', 'Price',
-                                                'Price_per_KG', 'Product HREF', 'Category'])
+            df = pd.DataFrame(dataset, columns=outcols)
             df.to_csv(output_file, index=False)
 
 
