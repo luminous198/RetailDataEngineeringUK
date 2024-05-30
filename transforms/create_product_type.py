@@ -6,6 +6,8 @@ product_types = [
     "Bacon", "Butter", "Juice", "Biscuits"
 ]
 
+#TODO improve this, make new rules to better identify product types
+
 # Define conflicting keywords for each product type
 conflicting_keywords = {
     "Milk": ["chocolate", "almond", "soy", "milkybar", ],
