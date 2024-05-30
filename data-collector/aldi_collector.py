@@ -150,6 +150,7 @@ class ALDICollector(BaseCollector):
             driver1.quit()
 
         if self.max_page_limit_per_category and int(last_page_number) > self.max_page_limit_per_category:
+            driver.quit()
             return self.max_page_limit_per_category
         driver.quit()
         return int(last_page_number)

@@ -24,6 +24,7 @@ class BaseCollector(object):
     def get_driver(self):
         options = Options()
         options.headless = True
+        options.set_preference("dom.popup_maximum", 2)
         options.add_argument("--headless")
 
         return webdriver.Firefox(options=options)

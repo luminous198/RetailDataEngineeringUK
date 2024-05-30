@@ -34,7 +34,8 @@ class ASDACollector(BaseCollector):
          'fruit', 'vegetables-potatoes', 'salads-stir-fry', 'extra-special-fruit-veg', 'raw-nuts-seeds-dried-fruit',
          'meat-poultry', 'fish-seafood',
          'cooked-meat',
-         'bakery',
+         'beer', 'wine', 'spirits', 'cider',
+         'bakery','fizzy-drinks',
          # chilled-food
          'milk-butter-cream-eggs', 'cheese', 'yogurts-desserts',
          'chilled-juice-smoothies', 'ready-meals',
@@ -48,10 +49,10 @@ class ASDACollector(BaseCollector):
          'coffee-tea-hot-chocolate',
          'jams-spreads-desserts', 'noodle-pots-instant-snacks', 'home-baking', 'under-100-calories', 'world-food',
          # drinks
-         'fizzy-drinks', 'squash-cordial', 'water', 'tonic-water-mixers', 'fruit-juice', 'sports-energy-drinks',
+         'squash-cordial', 'water', 'tonic-water-mixers', 'fruit-juice', 'sports-energy-drinks',
          'coffee-tea-hot-chocolate',
          # beer wine spirits
-         'beer', 'wine', 'spirits', 'cider', 'prosecco-champagne', 'pre-mixed-cocktails',
+         'prosecco-champagne', 'pre-mixed-cocktails',
          'tobacconist',
          # 'toiletries-beauty',
          "hair-care-dye-styling", "make-up-nails", "mens-toiletries", "womens-toiletries", "oral-dental-care",
@@ -198,6 +199,7 @@ class ASDACollector(BaseCollector):
             driver1.quit()
 
         if self.max_page_limit_per_category and int(last_page_number) > self.max_page_limit_per_category:
+            driver.quit()
             return self.max_page_limit_per_category
         driver.quit()
         return int(last_page_number)
