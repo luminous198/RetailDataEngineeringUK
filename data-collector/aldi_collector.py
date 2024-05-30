@@ -16,6 +16,7 @@ from selenium.webdriver.firefox.options import Options
 from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY
 from base_collector import BaseCollector
 from bs4 import BeautifulSoup
+from commons.statics import STORE_ALDI
 
 
 
@@ -24,7 +25,7 @@ class ALDICollector(BaseCollector):
 
     def __int__(self):
         super(ALDICollector, self).__init__()
-        self.output_datadir = os.path.join(os.path.join(DATADIR_PATH, 'ALDI'), str(datetime.datetime.now().date()))
+        self.output_datadir = os.path.join(os.path.join(DATADIR_PATH, STORE_ALDI), str(datetime.datetime.now().date()))
         try:
             os.makedirs(self.output_datadir)
         except:

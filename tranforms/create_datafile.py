@@ -4,33 +4,34 @@ import os
 import pandas as pd
 from utils.file_reading import read_folder_and_get_union
 from datetime import datetime
+from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
 
 
 pd.set_option('display.max_columns', None)
 
 def get_asda_dataset(datadir, data_date):
     additional_cols = [{'colname': 'scrape_date', 'colvalue': data_date}]
-    asda_path = os.path.join(os.path.join(datadir, 'ASDA'), data_date)
+    asda_path = os.path.join(os.path.join(datadir, STORE_ASDA), data_date)
     asda_data = read_folder_and_get_union(asda_path, staic_col_params=additional_cols)
-    asda_data['Storename'] = 'ASDA'
+    asda_data['Storename'] = STORE_ASDA
     return asda_data
 
 
 def get_aldi_dataset(datadir, data_date):
     additional_cols = [{'colname': 'scrape_date', 'colvalue': data_date}]
-    aldi_path = os.path.join(os.path.join(datadir, 'ALDI'), data_date)
+    aldi_path = os.path.join(os.path.join(datadir, STORE_ALDI), data_date)
     aldi_data = read_folder_and_get_union(aldi_path, staic_col_params=additional_cols)
-    aldi_data['Storename'] = 'ALDI'
+    aldi_data['Storename'] = STORE_ALDI
     return aldi_data
 
 
 def get_morrissons_dataset(datadir, data_date):
-    morr_path = os.path.join(os.path.join(datadir, 'MORRISSONS'), data_date)
+    morr_path = os.path.join(os.path.join(datadir, STORE_MORRISSONS), data_date)
     morr_datafile = os.listdir(morr_path)[0]
     morr_datafilepath = os.path.join(morr_path, morr_datafile)
     df = pd.read_csv(morr_datafilepath, sep=',')
     df['scrape_date'] = data_date
-    df['Storename'] = 'MORRISSONS'
+    df['Storename'] = STORE_MORRISSONS
     return df
 
 

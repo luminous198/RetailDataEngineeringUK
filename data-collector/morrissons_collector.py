@@ -11,7 +11,7 @@ from base_scrollable_collector import BaseScrollableCollector
 from commons.configs import DATADIR_PATH
 import re
 from bs4 import BeautifulSoup
-
+from commons.statics import STORE_MORRISSONS
 
 
 
@@ -19,7 +19,7 @@ class MorrissonsCollector(BaseScrollableCollector):
 
     def __init__(self):
         super(MorrissonsCollector, self).__init__()
-        self.output_datadir = os.path.join(os.path.join(DATADIR_PATH, 'MORRISSONS'), str(datetime.datetime.now().date()))
+        self.output_datadir = os.path.join(os.path.join(DATADIR_PATH, STORE_MORRISSONS), str(datetime.datetime.now().date()))
         try:
             os.makedirs(self.output_datadir)
         except:

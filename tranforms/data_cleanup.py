@@ -6,6 +6,7 @@ import numpy as np
 import re
 from create_product_type import identify_product_type
 from utils.file_reading import read_excel_sheet_data, get_excel_sheet_names
+from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
 
 
 pd.set_option('display.max_columns', None)
@@ -177,13 +178,11 @@ def make_brand_lookup_data(branddatafile):
     command_brands_list = list(set(command_brands_list))
 
     data = {
-        'ALDI': [x[0].lower() for x in aldi_brands_list],
-        'ASDA': [x[0].lower() for x in asda_brands_list],
-        'MORRISSONS': [x[0].lower() for x in morrissons_brands_list],
+        STORE_ALDI: [x[0].lower() for x in aldi_brands_list],
+        STORE_ASDA: [x[0].lower() for x in asda_brands_list],
+        STORE_MORRISSONS: [x[0].lower() for x in morrissons_brands_list],
         'common': command_brands_list,
     }
-    print(data)
-
     return data
 
 def add_brand(product_name, storename, category, branddata):
@@ -199,17 +198,17 @@ def add_brand(product_name, storename, category, branddata):
     is_aldi = 0
     is_asda = 0
 
-    for _store in ['MORRISSONS', 'ALDI', 'ASDA']:
+    for _store in [STORE_MORRISSONS, STORE_ALDI, STORE_ASDA]:
         if _store != storename:
             continue
         for _brand in branddata[_store]:
             if _brand in product_name:
                 brand_items.append(_brand)
-                if _store == 'MORRISSONS':
+                if _store == STORE_MORRISSONS:
                     is_morrisson = 1
-                elif _store == 'ASDA':
+                elif _store == STORE_ASDA:
                     is_asda = 1
-                elif _store == 'ALDI':
+                elif _store == STORE_ALDI:
                     is_aldi = 1
                 else:
                     pass
