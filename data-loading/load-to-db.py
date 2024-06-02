@@ -1,7 +1,7 @@
 from commons.configs import DATADIR_PATH
 import os
 import pandas as pd
-from utils.file_reading import read_folder_and_get_union
+from data_utils.file_reading import read_folder_and_get_union
 from dbsetup import Session, engine
 from datetime import datetime
 
