@@ -2,9 +2,9 @@ from commons.configs import DATADIR_PATH
 from commons.configs import TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME
 import os
 import pandas as pd
-from utils.file_reading import read_folder_and_get_union
-from datetime import datetime
 from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
+from data_utils.file_reading import read_folder_and_get_union
+from datetime import datetime
 
 
 pd.set_option('display.max_columns', None)
@@ -26,13 +26,11 @@ def get_aldi_dataset(datadir, data_date):
 
 
 def get_morrissons_dataset(datadir, data_date):
-    morr_path = os.path.join(os.path.join(datadir, STORE_MORRISSONS), data_date)
-    morr_datafile = os.listdir(morr_path)[0]
-    morr_datafilepath = os.path.join(morr_path, morr_datafile)
-    df = pd.read_csv(morr_datafilepath, sep=',')
-    df['scrape_date'] = data_date
-    df['Storename'] = STORE_MORRISSONS
-    return df
+    additional_cols = [{'colname': 'scrape_date', 'colvalue': data_date}]
+    morrissons_path = os.path.join(os.path.join(datadir, STORE_MORRISSONS), data_date)
+    morrissons_data = read_folder_and_get_union(morrissons_path, staic_col_params=additional_cols)
+    morrissons_data['Storename'] = STORE_MORRISSONS
+    return morrissons_data
 
 
 def unify_data(asda_data, aldi_data, morrissons_data):
@@ -67,16 +65,12 @@ def unify_data(asda_data, aldi_data, morrissons_data):
     return combined_df
 
 
-
-if __name__ == "__main__":
-
-    date_to_get = '2024-05-29'
-
+def create_datafile(date_to_get):
     outfilename = os.path.join(TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME.format(**{'DATAFILE_DATE': date_to_get}))
 
     asda_data = get_asda_dataset(DATADIR_PATH, date_to_get)
     aldi_data = get_aldi_dataset(DATADIR_PATH, date_to_get)
     morrissons_data = get_morrissons_dataset(DATADIR_PATH, date_to_get)
-
     combined_data = unify_data(asda_data, aldi_data, morrissons_data)
     combined_data.to_csv(outfilename, index=False)
+

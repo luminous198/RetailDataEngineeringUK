@@ -7,11 +7,12 @@ import datetime
 from random import randint
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from urllib3.exceptions import NewConnectionError, ConnectionError, MaxRetryError
-from base_scrollable_collector import BaseScrollableCollector
+from data_collector.base_scrollable_collector import BaseScrollableCollector
 from commons.configs import DATADIR_PATH
 import re
 from bs4 import BeautifulSoup
 from commons.statics import STORE_MORRISSONS
+from commons.configs import MAX_CATEGORIES
 
 
 
@@ -36,6 +37,8 @@ class MorrissonsCollector(BaseScrollableCollector):
                        'home-garden-166274', 'health-wellbeing-medicines-103497', 'baby-toddler-177598',
                        'toys-entertainment-166275',
                        'pet-shop-102207', 'free-from-175652', 'world-foods-182137']
+        if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:
+            self.categories = self.categories[:MAX_CATEGORIES]
     def box_html_to_json(self, boxhtml):
         soup = BeautifulSoup(boxhtml, 'html.parser')
 
@@ -48,7 +51,7 @@ class MorrissonsCollector(BaseScrollableCollector):
             ('image_url', 'img', 'fop-img', 'src'),
             ('product_life', 'span', 'fop-life', 'text'),
             ('Price', 'span', 'fop-price', 'text'),
-            ('Price_per_UOM', 'span', 'fop-unit-price', 'text'),
+            ('Price per UOM', 'span', 'fop-unit-price', 'text'),
             ('rating', 'span', 'fop-rating-inner', 'title'),
             ('promotion', 'a', 'fop-row-promo', 'text'),
             ('Weight', 'span', 'fop-catch-weight-inline', 'text')
@@ -69,10 +72,10 @@ class MorrissonsCollector(BaseScrollableCollector):
     def scrape(self):
 
         start_time = time.time()
-        out_file_time = str(datetime.datetime.now())
+        out_file_time = str(datetime.datetime.now().date())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
 
-        outcols = ['offer', 'Product Name', 'sku', 'Product HREF', 'product_life', 'Price', 'Price_per_UOM',
+        outcols = ['offer', 'Product Name', 'sku', 'Product HREF', 'product_life', 'Price', 'Price per UOM',
                    'rating', 'promotion', 'Category', 'Page Number', 'Record Index', 'Weight']
 
         for _category in self.categories:
@@ -132,6 +135,10 @@ class MorrissonsCollector(BaseScrollableCollector):
         total_time = end_time - start_time
         print('Total time taken', total_time)
 
-if __name__ == "__main__":
+
+def scrape_morrissons():
     obj = MorrissonsCollector()
     obj.scrape()
+
+if __name__ == "__main__":
+    scrape_morrissons()

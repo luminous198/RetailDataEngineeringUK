@@ -13,8 +13,8 @@ from random import randint
 from selenium import webdriver
 import re
 from selenium.webdriver.firefox.options import Options
-from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY
-from base_collector import BaseCollector
+from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY, MAX_CATEGORIES
+from data_collector.base_collector import BaseCollector
 from bs4 import BeautifulSoup
 from commons.statics import STORE_ALDI
 
@@ -36,6 +36,8 @@ class ALDICollector(BaseCollector):
                            'household', 'pet-care']
         self.base_url = 'https://groceries.aldi.co.uk/en-GB'
         self.max_page_limit_per_category = MAX_PAGE_PER_CATEGORY
+        if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:
+            self.categories = self.categories[:MAX_CATEGORIES]
         self.css_elements_map = {
             'last_page_number': 'ul .d-flex-inline.pt-2',
             'product_name': '#vueSearchResults .p.text-default-font',
@@ -71,7 +73,7 @@ class ALDICollector(BaseCollector):
 
     def scrape(self):
 
-        out_file_time = str(datetime.datetime.now())
+        out_file_time = str(datetime.datetime.now().date())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
 
         outcols = ['Product ID', 'Product HREF', 'Image URL', 'Product Name', 'Pack Size', 'Price', 'Price per UOM',
@@ -155,6 +157,11 @@ class ALDICollector(BaseCollector):
             return self.max_page_limit_per_category
         driver.quit()
         return int(last_page_number)
+
+def scrape_aldi():
+    x = ALDICollector()
+    x.__int__()
+    x.scrape()
 
 if __name__ == "__main__":
     x = ALDICollector()

@@ -4,8 +4,8 @@ from commons.configs import (TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME, CLEANED_D
 import os
 import numpy as np
 import re
-from create_product_type import identify_product_type
-from utils.file_reading import read_excel_sheet_data, get_excel_sheet_names
+from transforms.create_product_type import identify_product_type
+from data_utils.file_reading import read_excel_sheet_data, get_excel_sheet_names
 from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
 
 
@@ -221,10 +221,11 @@ def add_brand(product_name, storename, category, branddata):
 
     return (brand_items, is_morrisson, is_aldi, is_asda, brand_identified)
 
+def create_fingerprint(r):
+    return str(r['Product Name'])  + str(r['Storename'])  + str(r['Volume'])
 
-if __name__ == "__main__":
 
-    date_to_get = '2024-05-29'
+def data_cleanup(date_to_get):
     indatafile = os.path.join(TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME.format(**{'DATAFILE_DATE': date_to_get}))
     outfilename = os.path.join(TRANSFORM_DATADIR, CLEANED_DATAFILE_NAME.format(**{'DATAFILE_DATE': date_to_get}))
 
@@ -245,8 +246,8 @@ if __name__ == "__main__":
 
     cleaned_df.drop(['brand_data'], axis=1, inplace=True)
 
+    cleaned_df['fingerprint'] = cleaned_df.apply(lambda x: create_fingerprint(x), axis=1)
+
     print(cleaned_df.head())
 
     cleaned_df.to_csv(outfilename, index=False)
-
-

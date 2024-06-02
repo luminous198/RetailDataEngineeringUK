@@ -13,8 +13,8 @@ from random import randint
 from selenium import webdriver
 import re
 from selenium.webdriver.firefox.options import Options
-from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY
-from base_collector import BaseCollector
+from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY, MAX_CATEGORIES
+from data_collector.base_collector import BaseCollector
 from bs4 import BeautifulSoup
 from commons.statics import STORE_ASDA
 
@@ -71,6 +71,8 @@ class ASDACollector(BaseCollector):
          ]
         self.base_url = 'https://groceries.asda.com'
         self.max_page_limit_per_category = MAX_PAGE_PER_CATEGORY
+        if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:
+            self.categories = self.categories[:MAX_CATEGORIES]
         self.css_elements_map = {
             'last_page_number': '#main-content div.co-pagination__max-page > a',
             'product_name': ('#main-content '
@@ -117,7 +119,7 @@ class ASDACollector(BaseCollector):
 
         start_time = time.time()
 
-        out_file_time = str(datetime.datetime.now())
+        out_file_time = str(datetime.datetime.now().date())
         out_file_time = out_file_time.replace(' ', '').replace('.','').replace(':','')
 
         outcols = ['Product Name', 'Product HREF', 'Image URL', 'Volume', 'Rating', 'Review Count', 'Price',
@@ -204,7 +206,7 @@ class ASDACollector(BaseCollector):
         driver.quit()
         return int(last_page_number)
 
-if __name__ == "__main__":
+def scrape_asda():
     x = ASDACollector()
     x.__int__()
     x.scrape()
