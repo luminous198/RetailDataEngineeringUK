@@ -6,7 +6,8 @@ import numpy as np
 import re
 from transforms.create_product_type import identify_product_type
 from data_utils.file_reading import read_excel_sheet_data, get_excel_sheet_names
-from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
+from static_vars.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
+
 
 
 pd.set_option('display.max_columns', None)
@@ -251,3 +252,4 @@ def data_cleanup(date_to_get):
     print(cleaned_df.head())
 
     cleaned_df.to_csv(outfilename, index=False)
+    return outfilename

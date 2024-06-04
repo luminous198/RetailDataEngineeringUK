@@ -16,7 +16,7 @@ from selenium.webdriver.firefox.options import Options
 from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY, MAX_CATEGORIES
 from data_collector.base_collector import BaseCollector
 from bs4 import BeautifulSoup
-from commons.statics import STORE_ALDI
+from static_vars.statics import STORE_ALDI
 
 
 
@@ -31,9 +31,10 @@ class ALDICollector(BaseCollector):
         except:
             pass
         self.sleep_time = 10
-        self.categories = ['vegan-range', 'bakery', 'fresh-food', 'drinks', 'food-cupboard',
+        all_categories = ['vegan-range', 'bakery', 'fresh-food', 'drinks', 'food-cupboard',
                        'frozen', 'chilled-food', 'baby-toddler', 'health-beauty',
                            'household', 'pet-care']
+        self.categories = self.make_category_list(all_categories)
         self.base_url = 'https://groceries.aldi.co.uk/en-GB'
         self.max_page_limit_per_category = MAX_PAGE_PER_CATEGORY
         if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:

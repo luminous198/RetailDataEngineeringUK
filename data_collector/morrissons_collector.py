@@ -11,8 +11,8 @@ from data_collector.base_scrollable_collector import BaseScrollableCollector
 from commons.configs import DATADIR_PATH
 import re
 from bs4 import BeautifulSoup
-from commons.statics import STORE_MORRISSONS
 from commons.configs import MAX_CATEGORIES
+from static_vars.statics import STORE_MORRISSONS
 
 
 
@@ -31,14 +31,16 @@ class MorrissonsCollector(BaseScrollableCollector):
             'product_boxes_data': '#main-content .fops-item',
             'product_tiles': 'li.fops-item'
         }
-        self.categories = ['meat-poultry-179549', 'fruit-veg-176738', 'fresh-176739', 'fish-seafood-184367',
+        all_categories = ['meat-poultry-179549', 'fruit-veg-176738', 'fresh-176739', 'fish-seafood-184367',
                        'bakery-cakes-102210', 'food-cupboard-102705', 'chocolate-sweets-106130', 'frozen-180331',
                        'toiletries-beauty-102838', 'drinks-103644', 'beer-wines-spirits-103120', 'household-102063',
                        'home-garden-166274', 'health-wellbeing-medicines-103497', 'baby-toddler-177598',
                        'toys-entertainment-166275',
                        'pet-shop-102207', 'free-from-175652', 'world-foods-182137']
+        self.categories = self.make_category_list(all_categories)
         if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:
             self.categories = self.categories[:MAX_CATEGORIES]
+    
     def box_html_to_json(self, boxhtml):
         soup = BeautifulSoup(boxhtml, 'html.parser')
 

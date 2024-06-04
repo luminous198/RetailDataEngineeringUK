@@ -16,8 +16,10 @@ x-airflow-common:
     - ./docker-data/logs:/opt/airflow/logs
     - ./docker-data/pipelines:/opt/airflow/pipelines
     - ./data_collector:/opt/airflow/data_collector
-    - ./commons:/opt/airflow/commons
+    # - ./commons:/opt/airflow/commons
     - ./data-loading:/opt/airflow/data-loading
+    - ./static_vars:/opt/airflow/static_vars
+    - ./s3_utils:/opt/airflow/s3_utils
     - ./dbmodel:/opt/airflow/dbmodel
     - ./docs:/opt/airflow/docs
     - ./transforms:/opt/airflow/transforms
@@ -68,11 +70,24 @@ services:
     <<: *airflow-common
     command: celery worker
 
-  chrome:
-        image: selenium-chrome
+  # chrome:
+  #       image: selenium-chrome
+  #       build:
+  #         context: .
+  #         dockerfile: Dockerfile.chrome
+  #       hostname: chrome
+  #       privileged: true
+  #       shm_size: 2g
+  #       ports:
+  #          - "4444:4444"
+  
+  firefox:
+        image: selenium-firefox
         build:
           context: .
-          dockerfile: Dockerfile.chrome
-        hostname: chrome
-        privileged: true
+          dockerfile: Dockerfile.firefox
+        hostname: firefox
         shm_size: 2g
+        privileged: true
+        ports:
+          - "4444:4444"

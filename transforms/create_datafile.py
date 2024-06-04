@@ -2,7 +2,7 @@ from commons.configs import DATADIR_PATH
 from commons.configs import TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME
 import os
 import pandas as pd
-from commons.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
+from static_vars.statics import STORE_MORRISSONS, STORE_ALDI, STORE_ASDA
 from data_utils.file_reading import read_folder_and_get_union
 from datetime import datetime
 

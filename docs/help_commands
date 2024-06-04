@@ -8,3 +8,88 @@ docker cp container_id:tempfile.sql C:\Users\milan\Desktop
 
 #############################  postgres docker command
 docker run --hostname=a13de70a9486 --env=POSTGRES_PASSWORD=mysecretpassword --env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/16/bin --env=GOSU_VERSION=1.17 --env=LANG=en_US.utf8 --env=PG_MAJOR=16 --env=PG_VERSION=16.3-1.pgdg120+1 --env=PGDATA=/var/lib/postgresql/data --volume=/var/lib/postgresql/data -p 5432:5432 --restart=no --runtime=runc -d postgres
+
+
+####ECR
+
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.region.amazonaws.com
+
+
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 165781726457.dkr.ecr.eu-north-1.amazonaws.com
+
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/c6f9t7r1
+
+# build the images
+docker-compose build
+
+##tag the images
+docker tag custom-airflow:2.7.1-python3.9 public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep:latest
+docker tag redis:latest public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-redis
+docker tag selenium-chrome:latest public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selchr
+docker tag postgres:latest public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-postgres
+docker tag selenium-firefox:latest public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selfr:latest
+
+#push the images
+docker push public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep:latest
+docker push public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-redis:latest
+docker push public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selchr:latest
+docker push public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-postgres:latest
+docker push public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selfr:latest
+
+#ec2 setup amazon linux
+#!/bin/bash
+
+# Update the package index
+sudo yum update -y
+
+# Install Docker
+sudo yum install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Log out and log back in to apply the group membership
+newgrp docker
+mkdir docker-data
+mkdir docker-data/data
+sudo yum install htop
+sudo chmod -R u=rwx,g=rwx,o=rwx docker-data
+
+
+
+#ubuntu
+
+sudo apt update -y
+sudo apt upgrade -y
+
+# Install Docker
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Log out and log back in to apply the group membership
+newgrp docker
+mkdir docker-data
+mkdir docker-data/data
+sudo apt install htop -y
+sudo chmod -R u=rwx,g=rwx,o=rwx docker-data
+
+
+
+#docker refetch image
+docker-compose stop
+docker-compose rm -f
+docker-compose pull   
+docker-compose up -d
+
+
+#remove all docker images
+docker rmi -f $(docker images -aq)

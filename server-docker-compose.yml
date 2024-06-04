@@ -1,0 +1,57 @@
+version: '3'
+services:
+  postgres:
+    image: public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: airflow_reddit
+      POSTGRES_PORT: 5432
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-redis:latest
+    ports:
+      - "6379:6379"
+
+  airflow:
+    &airflow-common
+    image: public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep:latest
+    env_file:
+      - airflow.env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./commons:/opt/airflow/commons
+
+  # chrome:
+  #   image: public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selchr:latest
+  #   ports:
+  #     - "4433:4433"
+  
+  firefox:
+    image: public.ecr.aws/c6f9t7r1/milan-retaildataeng-uk-rep-selfr:latest
+    ports:
+      - "4444:4444"
+
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "pip install -r /opt/airflow/requirements.txt && airflow db init && airflow db upgrade && airflow users create --username admin --firstname admin --lastname admin --role Admin --email airflow@airflow.com --password admin"
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker

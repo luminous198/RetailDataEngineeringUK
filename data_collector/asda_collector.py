@@ -16,7 +16,7 @@ from selenium.webdriver.firefox.options import Options
 from commons.configs import DATADIR_PATH, MAX_PAGE_PER_CATEGORY, MAX_CATEGORIES
 from data_collector.base_collector import BaseCollector
 from bs4 import BeautifulSoup
-from commons.statics import STORE_ASDA
+from static_vars.statics import STORE_ASDA
 
 
 
@@ -30,7 +30,7 @@ class ASDACollector(BaseCollector):
         except:
             pass
         self.sleep_time = 10
-        self.categories = ['vegan-vegetarian', 'dietary-lifestyle',
+        all_categories = ['vegan-vegetarian', 'dietary-lifestyle',
          'fruit', 'vegetables-potatoes', 'salads-stir-fry', 'extra-special-fruit-veg', 'raw-nuts-seeds-dried-fruit',
          'meat-poultry', 'fish-seafood',
          'cooked-meat',
@@ -51,24 +51,8 @@ class ASDACollector(BaseCollector):
          # drinks
          'squash-cordial', 'water', 'tonic-water-mixers', 'fruit-juice', 'sports-energy-drinks',
          'coffee-tea-hot-chocolate',
-         # beer wine spirits
-         'prosecco-champagne', 'pre-mixed-cocktails',
-         'tobacconist',
-         # 'toiletries-beauty',
-         "hair-care-dye-styling", "make-up-nails", "mens-toiletries", "womens-toiletries", "oral-dental-care",
-         "period-products",
-         "skin-care", "bath-shower-soap", 'beauty-electricals', 'sunscreen', 'bladder-weakness',
-         'health-wellness', 'sun-care-tanning', "toiletries-accessories",
-         "air-fresheners", "batteries", "bin-bags", "cleaning", "dishwasher", "fabric-conditioners",
-         "household-accessories", "ironing",
-         "kitchen-roll", "laundry", "light-bulbs", "shoe-care", "toilet-roll", "washing-powder-liquid",
-         'baby-toddler-kids',
-         'pets',
-         # Home
-         'bed-bath-home', 'kitchen', 'music-films-books', "dvds-blu-rays", "gaming", "headphones-speakers",
-         "smart-home",
-         "tvs-accessories", 'diy-car-care', 'toys', 'technology-electricals', 'flowers'
          ]
+        self.categories = self.make_category_list(all_categories)
         self.base_url = 'https://groceries.asda.com'
         self.max_page_limit_per_category = MAX_PAGE_PER_CATEGORY
         if MAX_CATEGORIES and len(self.categories) > MAX_CATEGORIES:
