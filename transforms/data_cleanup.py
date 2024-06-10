@@ -21,11 +21,18 @@ def cleanup_price(r):
         return 'ERROR'
     r = r.replace(u'\xA3', '')
     r = r.replace(u'now', '')
+
     if 'p' in r:
         r = r.replace('p','')
-        r = float(r)
+        try:
+            r = float(r)
+        except:
+            return
         r = r/100
-    r = float(r)
+    try:
+        r = float(r)
+    except:
+        return
     return r
 
 
@@ -253,3 +260,4 @@ def data_cleanup(date_to_get):
 
     cleaned_df.to_csv(outfilename, index=False)
     return outfilename
+

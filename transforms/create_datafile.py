@@ -66,6 +66,11 @@ def unify_data(asda_data, aldi_data, morrissons_data):
 
 
 def create_datafile(date_to_get):
+    try:
+        os.makedirs(TRANSFORM_DATADIR)
+        print("made transform dir")
+    except:
+        print("transform dir exists")
     outfilename = os.path.join(TRANSFORM_DATADIR, UNIFIED_DATAFILE_NAME.format(**{'DATAFILE_DATE': date_to_get}))
 
     asda_data = get_asda_dataset(DATADIR_PATH, date_to_get)

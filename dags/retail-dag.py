@@ -20,6 +20,8 @@ from datetime import timedelta
 from s3_utils.s3_connection import upload_clean_file_to_s3
 
 
+dag_start_date_time = datetime.now()
+
 
 default_args = {
     'owner': 'Milan',
@@ -40,8 +42,8 @@ dag = DAG(
 aldi_extract = PythonOperator(
     task_id='aldi_collector',
     python_callable=scrape_aldi,
+    retries=5,
     op_kwargs={
-        "retries": 3,
         "retry_delay": timedelta(seconds=30)
     },
     dag=dag
@@ -51,8 +53,8 @@ aldi_extract = PythonOperator(
 asda_extract = PythonOperator(
     task_id='asda_collector',
     python_callable=scrape_asda,
+    retries=5,
     op_kwargs={
-        "retries": 3,
         "retry_delay": timedelta(seconds=30)
     },
     dag=dag
@@ -62,8 +64,8 @@ asda_extract = PythonOperator(
 morrissons_extract = PythonOperator(
     task_id='morrissons_collector',
     python_callable=scrape_morrissons,
+    retries=5,
     op_kwargs={
-        "retries": 3,
         "retry_delay": timedelta(seconds=30)
     },
     dag=dag
@@ -96,4 +98,4 @@ upload_s3 = PythonOperator(
     dag=dag
 )
 
-morrissons_extract >> asda_extract >> aldi_extract  >> datafile_creation >> datafile_cleanup >> upload_s3
+[morrissons_extract, asda_extract, aldi_extract]  >> datafile_creation >> datafile_cleanup >> upload_s3
